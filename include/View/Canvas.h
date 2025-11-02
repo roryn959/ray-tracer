@@ -6,7 +6,7 @@
 #include "Core/Colour.h"
 
 #define WINDOW_W 800
-#define WINDOW_H 700
+#define WINDOW_H 800
 
 #define GRAPH_W 100
 #define GRAPH_H 100

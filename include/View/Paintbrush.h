@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <math.h>
+
 #include "Core/Point.h"
 #include "Canvas.h"
 
@@ -22,7 +25,7 @@ class Paintbrush {
 
         inline int Get1dPosition(int x, int y) { return y * m_width + x; }
 
-        inline void Set(int x, int y, float z, Colour colour) {
+        void Set(int x, int y, float z, Colour colour) {
             m_buffer[y * m_width + x] = colour;
 
             int position = Get1dPosition(x, y);
@@ -33,6 +36,11 @@ class Paintbrush {
         }
 
         inline uint32_t* GetData() { return m_buffer.data(); }
+
+        inline void ResetDistances() {
+            //std::fill(m_distances.begin(), m_distances.end(), std::numeric_limits<float>::infinity());
+            memset(m_buffer.data(), 0x7F, m_buffer.size() * sizeof(uint32_t)); // Dirty undefined behavior >:)
+        }
 
     private:
         int m_width;
@@ -47,16 +55,19 @@ public:
 
     void Apply();
 
-    void PaintBackground();
     void PaintBackground(Colour colour);
+    void PaintAxes();
 
+    void PaintPoint(Point point, Colour colour);
     void PaintLine(const Point& point, const Point& p2, Colour colour);
 
-private:
+private: // -45: 800 - ( (-45 + 50) * 8 ) = 800 - (5 * 8) = 800 - 40 = 760
     static inline int TranslateGraphToWindowX(float x) { return round((x + GRAPH_HALFWIDTH) * GRAPH_TO_WINDOW_WIDTH_FACTOR); };
     static inline int TranslateGraphToWindowY(float y) { return round(WINDOW_H - ((y + GRAPH_HALFHEIGHT) * GRAPH_TO_WINDOW_HEIGHT_FACTOR)); } ;
 
     inline void SetPaintColour(Colour colour) { SDL_SetRenderDrawColor(m_pRenderer, colour.m_red, colour.m_green, colour.m_blue, SDL_ALPHA_OPAQUE); }
+
+    void Bresenham(int x0, int y0, int x1, int y1, Colour colour);
 
     SDL_Window* m_pWindow;
     SDL_Renderer* m_pRenderer;

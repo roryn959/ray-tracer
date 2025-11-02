@@ -5,9 +5,13 @@
 #include "View/Canvas.h"
 #include "View/Paintbrush.h"
 
+#define FRAME_RATE_FREQUENCY 50
+
+
 void mainloop(Canvas& canvas, Paintbrush& paintbrush) {
     float lastTime = SDL_GetTicks() / 1000.0f;
 
+    int frame_tick = FRAME_RATE_FREQUENCY;
     bool running = true;
     while (running) {
 
@@ -19,16 +23,20 @@ void mainloop(Canvas& canvas, Paintbrush& paintbrush) {
         }
 
         paintbrush.PaintBackground(COLOUR_WHITE);
+        paintbrush.PaintAxes();
 
-        paintbrush.PaintLine(Point{-50, -50}, Point{50, 50}, COLOUR_RED);
+        paintbrush.PaintLine(Point{-20, 20, 5}, Point{25, -30, 7}, COLOUR_RED);
 
         paintbrush.Apply();
 
-        float currentTime = SDL_GetTicks() / 1000.0f;
-        float fps = 1 / (currentTime - lastTime);
-        lastTime = currentTime;
-
-        std::cout << "fps: " << fps << "\n";
+        --frame_tick;
+        if (0 == frame_tick) {
+            float currentTime = SDL_GetTicks() / 1000.0f;
+            float fps = FRAME_RATE_FREQUENCY / (currentTime - lastTime);
+            lastTime = currentTime;
+            std::cout << "fps: " << fps << "\n";
+            frame_tick = FRAME_RATE_FREQUENCY;
+        }
 
     }
 }
