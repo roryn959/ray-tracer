@@ -1,29 +1,12 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
-#define WINDOW_W 700
-#define WINDOW_H 900
+#include "Core/Colour.h"
+#include "View/Canvas.h"
+#include "View/Paintbrush.h"
 
-bool startup(SDL_Window*& window, SDL_Renderer*& renderer) {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
-        return false;
-    }
-
-    window = SDL_CreateWindow("Template", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_W, WINDOW_H, SDL_WINDOW_SHOWN);
-    if (NULL == window)
-        return false;
-
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (NULL == renderer)
-        return false;
-
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
-    return true;
-}
-
-void mainloop(SDL_Window*& window, SDL_Renderer*& renderer) {
+void mainloop(Canvas& canvas, Paintbrush& paintbrush) {
+    float lastTime = SDL_GetTicks() / 1000.0f;
 
     bool running = true;
     while (running) {
@@ -35,26 +18,26 @@ void mainloop(SDL_Window*& window, SDL_Renderer*& renderer) {
             }
         }
 
-        SDL_RenderPresent(renderer);
+        paintbrush.PaintBackground(COLOUR_WHITE);
+
+        paintbrush.PaintLine(Point{-50, -50}, Point{50, 50}, COLOUR_RED);
+
+        paintbrush.Apply();
+
+        float currentTime = SDL_GetTicks() / 1000.0f;
+        float fps = 1 / (currentTime - lastTime);
+        lastTime = currentTime;
+
+        std::cout << "fps: " << fps << "\n";
+
     }
 }
 
-void teardown(SDL_Window*& window, SDL_Renderer*& renderer) {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
 int main() {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
+    Canvas canvas;
+    Paintbrush paintbrush(canvas);
 
-    if (!startup(window, renderer))
-        return 1;
-
-    mainloop(window, renderer);
-
-    teardown(window, renderer);
+    mainloop(canvas, paintbrush);
 
     return 0;
 }
