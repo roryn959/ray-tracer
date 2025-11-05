@@ -3,7 +3,9 @@
 #include <vector>
 #include <math.h>
 
+#include "Core/Line.h"
 #include "Core/Point.h"
+#include "Core/Triangle.h"
 #include "Canvas.h"
 
 constexpr int GRAPH_HALFWIDTH = GRAPH_W / 2;
@@ -11,6 +13,8 @@ constexpr int GRAPH_HALFHEIGHT = GRAPH_H / 2;
 
 constexpr float GRAPH_TO_WINDOW_WIDTH_FACTOR = WINDOW_W / (float) GRAPH_W;
 constexpr float GRAPH_TO_WINDOW_HEIGHT_FACTOR = WINDOW_H / (float) GRAPH_H;
+
+#define BACKGROUND_Z 100
 
 class Paintbrush {
 
@@ -26,8 +30,6 @@ class Paintbrush {
         inline int Get1dPosition(int x, int y) { return y * m_width + x; }
 
         void Set(int x, int y, float z, Colour colour) {
-            m_buffer[y * m_width + x] = colour;
-
             int position = Get1dPosition(x, y);
             if (z < m_distances[position]) {
                 m_buffer[position] = colour;
@@ -39,7 +41,7 @@ class Paintbrush {
 
         inline void ResetDistances() {
             //std::fill(m_distances.begin(), m_distances.end(), std::numeric_limits<float>::infinity());
-            memset(m_buffer.data(), 0x7F, m_buffer.size() * sizeof(uint32_t)); // Dirty undefined behavior >:)
+            memset(m_distances.data(), 0x7F, m_buffer.size() * sizeof(float)); // Dirty undefined behavior >:)
         }
 
     private:
@@ -59,15 +61,22 @@ public:
     void PaintAxes();
 
     void PaintPoint(Point point, Colour colour);
-    void PaintLine(const Point& point, const Point& p2, Colour colour);
+    void PaintLine(Line line, Colour colour);
+    void PaintTriangle(Triangle triangle);
 
-private: // -45: 800 - ( (-45 + 50) * 8 ) = 800 - (5 * 8) = 800 - 40 = 760
+private:
     static inline int TranslateGraphToWindowX(float x) { return round((x + GRAPH_HALFWIDTH) * GRAPH_TO_WINDOW_WIDTH_FACTOR); };
-    static inline int TranslateGraphToWindowY(float y) { return round(WINDOW_H - ((y + GRAPH_HALFHEIGHT) * GRAPH_TO_WINDOW_HEIGHT_FACTOR)); } ;
+    static inline int TranslateGraphToWindowY(float y) { return round(WINDOW_H - ((y + GRAPH_HALFHEIGHT) * GRAPH_TO_WINDOW_HEIGHT_FACTOR)); };
+    static inline float TranslateGraphToWindowZ(float z) { return (z * (GRAPH_TO_WINDOW_HEIGHT_FACTOR + GRAPH_TO_WINDOW_WIDTH_FACTOR) / 2.0f); };
 
     inline void SetPaintColour(Colour colour) { SDL_SetRenderDrawColor(m_pRenderer, colour.m_red, colour.m_green, colour.m_blue, SDL_ALPHA_OPAQUE); }
 
     void Bresenham(int x0, int y0, int x1, int y1, Colour colour);
+
+    inline int PinedaEdgeFunction(int px, int py, int v0x, int v0y, int v1x, int v1y) {
+        return (py - v0y) * (v1x - v0x) - (px - v0x) * (v1y - v0y);
+    }
+
 
     SDL_Window* m_pWindow;
     SDL_Renderer* m_pRenderer;
