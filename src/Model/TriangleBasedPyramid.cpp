@@ -1,13 +1,16 @@
 #include "Model/TriangleBasedPyramid.h"
 
-TriangleBasedPyramid::TriangleBasedPyramid(Point p1, Point p2, Point p3, Point p4, Colour colour) :
-    m_points{p1, p2, p3, p4},
+TriangleBasedPyramid::TriangleBasedPyramid(Point p0, Point p1, Point p2, Point p3, Colour colour) :
+    m_points{p0, p1, p2, p3},
     m_centreOfMass{ 0, 0, 0 },
-    m_transformedPoints{p1, p2, p3, p4},
     m_colour{colour},
-    m_translation{ 0, 0, 0 },
-    m_rotation{IDENTITY}
+    m_triangles{}
 {
+    m_triangles.push_back({ m_points[0], m_points[2], m_points[1], m_colour});
+    m_triangles.push_back({ m_points[0], m_points[1], m_points[3], m_colour });
+    m_triangles.push_back({ m_points[1], m_points[2], m_points[3], m_colour });
+    m_triangles.push_back({ m_points[0], m_points[3], m_points[2], m_colour });
+    
     for (const Point& point : m_points) {
         m_centreOfMass.m_x += point.m_x;
         m_centreOfMass.m_y += point.m_y;
@@ -20,76 +23,88 @@ TriangleBasedPyramid::TriangleBasedPyramid(Point p1, Point p2, Point p3, Point p
 }
 
 std::vector<Triangle> TriangleBasedPyramid::GetTriangles() {
-    std::vector<Triangle> triangles;
+    UpdateTriangles();
+    return m_triangles;
+}
 
-    triangles.push_back({ m_transformedPoints[2], m_transformedPoints[1], m_transformedPoints[0], m_colour });
-    triangles.push_back({ m_transformedPoints[0], m_transformedPoints[1], m_transformedPoints[3], m_colour });
-    triangles.push_back({ m_transformedPoints[1], m_transformedPoints[2], m_transformedPoints[3], m_colour });
-    triangles.push_back({ m_transformedPoints[0], m_transformedPoints[2], m_transformedPoints[3], m_colour });
-    return triangles;
+void TriangleBasedPyramid::UpdateTriangles() {
+    m_triangles[0] = Triangle{ m_points[0], m_points[2], m_points[1], m_colour };
+    m_triangles[1] = Triangle{ m_points[0], m_points[1], m_points[3], m_colour };
+    m_triangles[2] = Triangle{ m_points[1], m_points[2], m_points[3], m_colour };
+    m_triangles[3] = Triangle{ m_points[0], m_points[3], m_points[2], m_colour };
 }
 
 void TriangleBasedPyramid::ShiftX(float dx) {
-    m_translation.m_x += dx;
+    for (Point &point : m_points)
+        point.m_x += dx;
 
     m_centreOfMass.m_x += dx;
-    UpdateTransformedPoints();
 }
 
 void TriangleBasedPyramid::ShiftY(float dy) {
-    m_translation.m_y += dy;
+    for (Point &point : m_points)
+        point.m_y += dy;
 
     m_centreOfMass.m_y += dy;
-    UpdateTransformedPoints();
 }
 
 void TriangleBasedPyramid::ShiftZ(float dz) {
-    m_translation.m_z += dz;
+    for (Point &point : m_points)
+        point.m_z += dz;
 
     m_centreOfMass.m_z += dz;
-    UpdateTransformedPoints();
 }
 
 void TriangleBasedPyramid::RotateOnX(float theta) {
-    Matrix<float, 3, 3> Rz{
+    float c = std::cos(theta), s = std::sin(theta);
+
+    Matrix<float, 3, 3> Rx{
         { 1, 0, 0 },
-        { 0, cos(theta), -sin(theta) },
-        { 0, sin(theta), cos(theta) }
+        { 0, c, -s },
+        { 0, s, c }
     };
 
-    m_rotation =  Rz * m_rotation;
-    UpdateTransformedPoints();
-
-    std::cout << m_rotation;
+    for (int i = 0; i < 4; ++i) {
+        Point &point = m_points[i];
+        point = point - m_centreOfMass;
+        point = Rx * point;
+        point = point + m_centreOfMass;
+    }
 }
 
 void TriangleBasedPyramid::RotateOnY(float theta) {
-    Matrix<float, 3, 3> Rz{
-        { cos(theta), -sin(theta), 0 },
-        { sin(theta), cos(theta), 0 },
-        { 0, 0, 1 }
+
+    float c = std::cos(theta), s = std::sin(theta);
+
+    Matrix<float, 3, 3> Ry{
+        { c, 0, s },
+        { 0, 1, 0 },
+        { -s, 0, c}
     };
 
-    m_rotation =  Rz * m_rotation;
-    UpdateTransformedPoints();
+    for (int i = 0; i < 4; ++i) {
+        Point &point = m_points[i];
+        point = point - m_centreOfMass;
+        point = Ry * point;
+        point = point + m_centreOfMass;
+    }
+
 }
 
 void TriangleBasedPyramid::RotateOnZ(float theta) {
+    float c = std::cos(theta), s = std::sin(theta);
+
     Matrix<float, 3, 3> Rz{
-        { cos(theta), -sin(theta), 0 },
-        { sin(theta), cos(theta), 0 },
+        { c, s, 0 },
+        { -s, c, 0 },
         { 0, 0, 1 }
     };
 
-    m_rotation =  Rz * m_rotation;
-    UpdateTransformedPoints();
-}
-
-void TriangleBasedPyramid::UpdateTransformedPoints() {
-    for (int i=0; i < 4; ++i) {
-        const Point& point = m_points[i] - m_centreOfMass;
-        Point translatedPoint{ point.m_x + m_translation.m_x, point.m_y + m_translation.m_y, point.m_z + m_translation.m_z };
-        Point transformedPoint = m_rotation * translatedPoint;
-        m_transformedPoints[i] = transformedPoint + m_centreOfMass;
+    for (int i = 0; i < 4; ++i) {
+        Point &point = m_points[i];
+        point = point - m_centreOfMass;
+        point = Rz * point;
+        point = point + m_centreOfMass;
     }
+
 }

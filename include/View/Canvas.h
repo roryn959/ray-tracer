@@ -8,8 +8,8 @@
 #define WINDOW_W 800
 #define WINDOW_H 800
 
-#define GRAPH_W 100
-#define GRAPH_H 100
+#define GRAPH_W 2
+#define GRAPH_H 2
 
 class Canvas {
 public:

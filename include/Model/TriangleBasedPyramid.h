@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <iostream>
 #include <math.h>
 #include <vector>
 
@@ -12,11 +11,19 @@
 
 class TriangleBasedPyramid {
 public:
-    TriangleBasedPyramid(Point p1, Point p2, Point p3, Point p4, Colour colour);
+    /// @brief A triangle based pyramid
+    /// @param p0 front base point
+    /// @param p1 left base point
+    /// @param p2 right base point
+    /// @param p3 tip point
+    /// @param colour colour of all sides
+    TriangleBasedPyramid(Point p0, Point p1, Point p2, Point p3, Colour colour);
 
     inline Point operator[](size_t i) { return m_points[i]; }
 
     inline Colour GetColour() { return m_colour; }
+    inline Point GetCentreOfMass() { return m_centreOfMass; }
+
     std::vector<Triangle> GetTriangles(); // Optimise this!!
 
     void ShiftX(float dx);
@@ -28,12 +35,10 @@ public:
     void RotateOnZ(float theta);
 
 private:
-    void UpdateTransformedPoints();
+    void UpdateTriangles();
 
-    const Point m_points[4];
+    Point m_points[4];
     Point m_centreOfMass;
-    Point m_transformedPoints[4];
     const Colour m_colour;
-    Point m_translation;
-    Matrix<float, 3, 3> m_rotation;
+    std::vector<Triangle> m_triangles;
 };

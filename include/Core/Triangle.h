@@ -10,8 +10,10 @@ public:
     Triangle(Point p1, Point p2, Point p3, Colour colour);
 
     inline Point operator[](size_t i) { return m_points[i]; }
+    inline const Point operator[](size_t i) const { return m_points[i]; }
 
-    inline Colour GetColour() { return m_colour; }
+    inline Colour& GetColour() { return m_colour; }
+    inline const Colour& GetColour() const { return m_colour; }
 
     void ShiftX(float dx);
     void ShiftY(float dy);

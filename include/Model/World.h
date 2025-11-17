@@ -12,6 +12,10 @@ public:
 
     void Paint();
 
+    void MovePovX(float dx);
+    void MovePovY(float dy);
+    void MovePovZ(float dz);
+
     void ProcessTimeTick(float dt);
 
 private:

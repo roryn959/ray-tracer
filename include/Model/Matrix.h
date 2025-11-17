@@ -67,9 +67,58 @@ public:
                 result.m_array[i][j] = m_array[i][j] + rhs.m_array[i][j] ;
             }
         }
+        return result;
     }
 
+    Matrix<T, N, M> operator-(const Matrix<T, N, M>& rhs) const {
+        Matrix<T, N, M> result{};
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < M; ++j) {
+                result.m_array[i][j] = m_array[i][j] - rhs.m_array[i][j] ;
+            }
+        }
+        return result;
+    }
 
+    Matrix<T, M, N> transpose() const {
+        Matrix<T, M, N> result{};
+
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < M; ++j) {
+                result(j, i) = m_array[i][j];
+            }
+        }
+
+        return result;
+    }
+
+    Matrix<T, N, 1> col(size_t j) const {
+        if (M <= j) throw std::runtime_error("Attempting to get column out of range");
+
+        Matrix<T, N, 1> result{};
+        for (int i = 0; i < N; ++i) 
+            result(i, 0) = m_array[i][j];
+        return result;
+    }
+
+    Matrix<T, N, 1> normalise() const {
+        if (1 != M) throw std::runtime_error("Attempting to normalise non-vector");
+
+        float sum{0};
+        for (int i = 0; i < N; ++i) {
+            sum += m_array[i][0] * m_array[i][0];
+        }
+
+        float factor = sqrt(sum);
+        if (factor < 1e-6f) throw std::runtime_error("Normalising near-zero vector");
+
+        Matrix<T, N, 1> result{};
+        for (int i = 0; i < N; ++i) {
+            result.m_array[i][0] = m_array[i][0] / factor;
+        }
+
+        return result;
+    }
 
 private:
     T m_array[N][M];
@@ -92,6 +141,25 @@ std::ostream& operator<<(std::ostream& os, const Matrix<T, N, M>& mat) {
         os << " ]\n";
     }
     return os;
+}
+
+template <typename T, int N>
+T dot(const Matrix<T, 1, N>& lhs, const Matrix<T, N, 1>& rhs) {
+    T result{0};
+
+    for (int i = 0; i < N; ++i)
+        result += lhs(0, i) * rhs(i, 0);
+
+    return result;
+}
+
+template <typename T>
+Matrix<T, 3, 1> cross(const Matrix<T, 3, 1>& a, const Matrix<T, 3, 1>& b) {
+    Matrix<T, 3, 1> result{};
+    result(0, 0) = a(1, 0) * b(2, 0) - a(2, 0) * b(1, 0);
+    result(1, 0) = a(2, 0) * b(0, 0) - a(0, 0) * b(2, 0);
+    result(2, 0) = a(0, 0) * b(1, 0) - a(1, 0) * b(0, 0);
+    return result;
 }
 
 // Commonly used matrices

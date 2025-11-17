@@ -15,6 +15,8 @@ constexpr float GRAPH_TO_WINDOW_WIDTH_FACTOR = WINDOW_W / (float) GRAPH_W;
 constexpr float GRAPH_TO_WINDOW_HEIGHT_FACTOR = WINDOW_H / (float) GRAPH_H;
 
 #define BACKGROUND_Z 100
+#define SCREEN_Z 0.1f
+#define FOV 1.0f
 
 class Paintbrush {
 
@@ -30,7 +32,7 @@ class Paintbrush {
         inline int Get1dPosition(int x, int y) { return y * m_width + x; }
 
         void Set(int x, int y, float z, Colour colour) {
-            if (z <= 0) return;
+            if (z <= 0.01 || x < 0 || x >= m_width || y < 0 || y >= m_height) return;
             int position = Get1dPosition(x, y);
             if (z < m_distances[position]) {
                 m_buffer[position] = colour;
@@ -63,12 +65,12 @@ public:
 
     void PaintPoint(Point point, Colour colour);
     void PaintLine(Line line, Colour colour);
-    void PaintTriangle(Triangle triangle);
+    void PaintTriangle(const Triangle& triangle);
 
 private:
     static inline int TranslateGraphToWindowX(float x) { return round((x + GRAPH_HALFWIDTH) * GRAPH_TO_WINDOW_WIDTH_FACTOR); };
     static inline int TranslateGraphToWindowY(float y) { return round(WINDOW_H - ((y + GRAPH_HALFHEIGHT) * GRAPH_TO_WINDOW_HEIGHT_FACTOR)); };
-    static inline float TranslateGraphToWindowZ(float z) { return (z * (GRAPH_TO_WINDOW_HEIGHT_FACTOR + GRAPH_TO_WINDOW_WIDTH_FACTOR) / 2.0f); };
+    static inline float TranslateGraphToWindowZ(float z) { return z; };
 
     inline void SetPaintColour(Colour colour) { SDL_SetRenderDrawColor(m_pRenderer, colour.m_red, colour.m_green, colour.m_blue, SDL_ALPHA_OPAQUE); }
 

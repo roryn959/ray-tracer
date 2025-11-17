@@ -27,18 +27,20 @@ void Paintbrush::PaintBackground(Colour colour) {
 
 void Paintbrush::PaintAxes() {
     for (int i=0; i<WINDOW_W; ++i) {
-        m_zBuffer.Set(i, WINDOW_H / 2, 0.1f, COLOUR_BLACK);
+        m_zBuffer.Set(i, WINDOW_H / 2, 0.015f, COLOUR_BLACK);
     }
 
     for (int i=0; i<WINDOW_H; ++i) {
-        m_zBuffer.Set(WINDOW_W / 2, i, 0.1f, COLOUR_BLACK);
+        m_zBuffer.Set(WINDOW_W / 2, i, 0.015f, COLOUR_BLACK);
     }
 }
 
 void Paintbrush::PaintPoint(Point point, Colour colour) {
+    if (point.m_z < SCREEN_Z) return;
+
     m_zBuffer.Set(
-        TranslateGraphToWindowX(point.m_x / point.m_z),
-        TranslateGraphToWindowY(point.m_y / point.m_z),
+        TranslateGraphToWindowX( point.m_x / (point.m_z * FOV) ),
+        TranslateGraphToWindowY( point.m_y / (point.m_z * FOV) ),
         point.m_z, 
         colour
     );
@@ -47,11 +49,13 @@ void Paintbrush::PaintPoint(Point point, Colour colour) {
 void Paintbrush::PaintLine(Line line, Colour colour) {
     float z0 = line[0].m_z;
     float z1 = line[1].m_z;
+
+    if (z0 < SCREEN_Z || z1 < SCREEN_Z) return;
     
-    int x0 = TranslateGraphToWindowX(line[0].m_x / z0);
-    int y0 = TranslateGraphToWindowY(line[0].m_y / z0);
-    int x1 = TranslateGraphToWindowX(line[1].m_x / z1);
-    int y1 = TranslateGraphToWindowY(line[1].m_y / z1);
+    int x0 = TranslateGraphToWindowX(line[0].m_x / (z0 * FOV) );
+    int y0 = TranslateGraphToWindowY(line[0].m_y / (z0 * FOV) );
+    int x1 = TranslateGraphToWindowX(line[1].m_x / (z1 * FOV) );
+    int y1 = TranslateGraphToWindowY(line[1].m_y / (z1 * FOV) );
 
     int dx = x1 - x0;
     int dy = y1 - y0;
@@ -82,9 +86,9 @@ void Paintbrush::PaintLine(Line line, Colour colour) {
 
     for (int x = x0; x <= x1; ++x) {
         if (steep)
-            m_zBuffer.Set(y, x, TranslateGraphToWindowZ(z), colour);
+            m_zBuffer.Set(y, x, TranslateGraphToWindowZ(z) - 0.01f, colour);
         else
-            m_zBuffer.Set(x, y, TranslateGraphToWindowZ(z), colour);
+            m_zBuffer.Set(x, y, TranslateGraphToWindowZ(z) - 0.01f, colour);
 
         error -= dy;
         if (error < 0) {
@@ -96,35 +100,33 @@ void Paintbrush::PaintLine(Line line, Colour colour) {
     }
 }
 
-void Paintbrush::PaintTriangle(Triangle triangle) {
+void Paintbrush::PaintTriangle(const Triangle& triangle) {
     Colour colour = triangle.GetColour();
     int red = colour.m_red;
     int green = colour.m_green;
     int blue = colour.m_blue;
 
     float v0z = triangle[0].m_z;
+    float v1z = triangle[1].m_z;
+    float v2z = triangle[2].m_z;
+
+    if (v0z < SCREEN_Z || v1z < SCREEN_Z || v2z < SCREEN_Z) return;
+
     float tv0z = TranslateGraphToWindowZ(v0z);
-    int v0x = TranslateGraphToWindowX(triangle[0].m_x / v0z);
+    int v0x = TranslateGraphToWindowX(triangle[0].m_x / (v0z * 1));
     int v0y = TranslateGraphToWindowY(triangle[0].m_y / v0z);
 
-    float v1z = triangle[1].m_z;
     float tv1z = TranslateGraphToWindowZ(v1z);
     int v1x = TranslateGraphToWindowX(triangle[1].m_x / v1z);
     int v1y = TranslateGraphToWindowY(triangle[1].m_y / v1z);
 
-    float v2z = triangle[2].m_z;
     float tv2z = TranslateGraphToWindowZ(v2z);
     int v2x = TranslateGraphToWindowX(triangle[2].m_x / v2z);
     int v2y = TranslateGraphToWindowY(triangle[2].m_y / v2z);
 
     float area = PinedaEdgeFunction(v0x, v0y, v1x, v1y, v2x, v2y);
 
-    if (area < 0) {
-        std::swap(v1x, v2x);
-        std::swap(v1y, v2y);
-        std::swap(v1z, v2z);
-        area *= -1;
-    }
+    if (area < 0) return;
 
     PaintLine( {triangle[0], triangle[1]}, COLOUR_BLACK );
     PaintLine( {triangle[1], triangle[2]}, COLOUR_BLACK );
@@ -155,7 +157,8 @@ void Paintbrush::PaintTriangle(Triangle triangle) {
 
                 float z = bv0 * tv0z + bv1 * tv1z + bv2 * tv2z;
 
-                m_zBuffer.Set(i, j, z, Colour{ (int) (red * (bv0 + bv1)), (int) (green * (bv0 + bv1)), (int) (blue * (bv0 + bv1)) });
+                Colour shadedColour{ (int) (red * (bv0 + bv1)), (int) (green * (bv0 + bv1)), (int) (blue * (bv0 + bv1)) };
+                m_zBuffer.Set(i, j, z, shadedColour);
             }
         }
     }
