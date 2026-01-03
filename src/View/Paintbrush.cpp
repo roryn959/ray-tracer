@@ -110,6 +110,7 @@ void Paintbrush::PaintTriangle(const Triangle& triangle) {
     float v1z = triangle[1].m_z;
     float v2z = triangle[2].m_z;
 
+    // backface culling
     if (v0z < SCREEN_Z || v1z < SCREEN_Z || v2z < SCREEN_Z) return;
 
     float tv0z = TranslateGraphToWindowZ(v0z);
@@ -158,7 +159,7 @@ void Paintbrush::PaintTriangle(const Triangle& triangle) {
                 float z = bv0 * tv0z + bv1 * tv1z + bv2 * tv2z;
 
                 Colour shadedColour{ (int) (red * (bv0 + bv1)), (int) (green * (bv0 + bv1)), (int) (blue * (bv0 + bv1)) };
-                m_zBuffer.Set(i, j, z, shadedColour);
+                m_zBuffer.Set(i, j, z, colour);
             }
         }
     }

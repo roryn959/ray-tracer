@@ -6,6 +6,8 @@
 #include "TriangleBasedPyramid.h"
 #include "View/Paintbrush.h"
 
+#define WORLD_SPEED 1.0
+
 class World {
 public:
     World(Paintbrush& paintbrush);
@@ -18,10 +20,28 @@ public:
 
     void ProcessTimeTick(float dt);
 
-private:
-    Paintbrush& m_paintbrush;
+    void MoveRight();
+    void MoveLeft();
+    void MoveForward();
+    void MoveBackward();
+    void MoveUp();
+    void MoveDown();
 
-    std::vector<Triangle> m_triangles;
-    std::vector<TriangleBasedPyramid> m_triangleBasedPyramids;
+    void UnMoveRight();
+    void UnMoveLeft();
+    void UnMoveForward();
+    void UnMoveBackward();
+    void UnMoveUp();
+    void UnMoveDown();
+
+private:
+    Paintbrush&                         m_paintbrush;
+
+    std::vector<Triangle>               m_triangles;
+    std::vector<TriangleBasedPyramid>   m_triangleBasedPyramids;
+
+    float                               m_xVelocity;
+    float                               m_yVelocity;
+    float                               m_zVelocity;    
 
 };

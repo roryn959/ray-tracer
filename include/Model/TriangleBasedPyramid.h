@@ -12,7 +12,7 @@
 class TriangleBasedPyramid {
 public:
     /// @brief A triangle based pyramid
-    /// @param p0 front base point
+    /// @param p0 back base point
     /// @param p1 left base point
     /// @param p2 right base point
     /// @param p3 tip point
