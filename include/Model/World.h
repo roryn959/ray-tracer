@@ -1,12 +1,12 @@
 #pragma once
 
 struct WorldBounds {
-	float m_lowerBoundX;
-	float m_upperBoundX;
-	float m_lowerBoundY;
-	float m_upperBoundY;
-	float m_lowerBoundZ;
-	float m_upperBoundZ;
+	float m_minX;
+	float m_maxX;
+	float m_minY;
+	float m_maxY;
+	float m_minZ;
+	float m_maxZ;
 	float m_pad0;
 	float m_pad1;
 };

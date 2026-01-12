@@ -12,8 +12,22 @@ enable_language(OBJCXX)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.mm)
 
+set(METAL_SRC ${CMAKE_SOURCE_DIR}/src/Gpu/raytracer.metal)
+set(METAL_AIR ${CMAKE_BINARY_DIR}/raytracer.air)
+set(METAL_LIB ${CMAKE_BINARY_DIR}/raytracer.metallib)
+
+add_custom_command(
+    OUTPUT ${METAL_LIB}
+    COMMAND xcrun metal -c ${METAL_SRC} -o ${METAL_AIR}
+    COMMAND xcrun metallib ${METAL_AIR} -o ${METAL_LIB}
+    DEPENDS ${METAL_SRC}
+)
+
+add_custom_target(metal_shaders ALL DEPENDS ${METAL_LIB})
 
 add_executable(main ${SOURCES})
+
+add_dependencies(main metal_shaders)
 
 target_link_libraries(main
     ${SDL2_LIBRARIES}

@@ -4,7 +4,7 @@
 
 #include "Core/Colour.h"
 
-#define GPU_BUILD 0
+#define GPU_BUILD 1
 
 #if GPU_BUILD
 #include "Model/GpuExecutor.h"
@@ -17,14 +17,14 @@ typedef CpuExecutor Executor;
 #include "Model/World.h"
 #include "View/Canvas.h"
 
-void RenderScene(Canvas& canvas, CpuExecutor& executor) {
+void RenderScene(Canvas& canvas, Executor& executor) {
 	uint32_t buffer[NUM_PIXELS];
 
 	executor.TraceRays(buffer);
 	canvas.ApplyPixels(buffer);
 }
 
-void Mainloop(Canvas& canvas, World& world, CpuExecutor& executor) {
+void Mainloop(Canvas& canvas, World& world, Executor& executor) {
 	RenderScene(canvas, executor);
 
     bool running = true;
@@ -49,8 +49,6 @@ int main() {
     Canvas canvas;
 	World world;
 	Executor executor(world);
-
-	//gpu.multiply_by_five(data, 5);
 
     Mainloop(canvas, world, executor);
 

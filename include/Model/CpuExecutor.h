@@ -1,6 +1,5 @@
 #pragma once
 
-//#include <math.h>
 #include <cstddef>
 
 #include "View/Canvas.h"
@@ -15,7 +14,7 @@ public:
 	void TraceRays(uint32_t* buffer);
 
 private:
-	void TraceRay(uint32_t* buffer, size_t i, const WorldBounds * const worldBounds);
+	void TraceRay(uint32_t* buffer, size_t i, const WorldBounds& worldBounds);
 
 	const World& m_world;
 };

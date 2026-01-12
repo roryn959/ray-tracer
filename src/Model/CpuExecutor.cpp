@@ -1,6 +1,5 @@
 #include "Model/CpuExecutor.h"
 
-#include <iostream>
 
 CpuExecutor::CpuExecutor(const World& world) :
 	m_world{world}
@@ -8,10 +7,10 @@ CpuExecutor::CpuExecutor(const World& world) :
 
 void CpuExecutor::TraceRays(uint32_t* buffer) {
 	for (int i = 0; i < NUM_PIXELS; ++i)
-		TraceRay(buffer, i, &m_world.GetBounds());
+		TraceRay(buffer, i, m_world.GetBounds());
 }
 
-void CpuExecutor::TraceRay(uint32_t* buffer, size_t i, const WorldBounds * const worldBounds) {
+void CpuExecutor::TraceRay(uint32_t* buffer, size_t i, const WorldBounds& worldBounds) {
 	//std::cout << "doing " << i << '\n';
 	float x{0.0f};
 	float y{0.0f};
@@ -28,7 +27,7 @@ void CpuExecutor::TraceRay(uint32_t* buffer, size_t i, const WorldBounds * const
 
 	// Left wall
 	if (xVelocity < 0.0f) {
-		t = (worldBounds->m_lowerBoundX) / xVelocity;
+		t = (worldBounds.m_minX) / xVelocity;
 		if (t < lowest_t) {
 			colour = COLOUR_RED;
 			lowest_t = t;
@@ -37,7 +36,7 @@ void CpuExecutor::TraceRay(uint32_t* buffer, size_t i, const WorldBounds * const
 
 	// Right wall
 	if (xVelocity > 0.0f) {
-		t = (worldBounds->m_upperBoundX - x) / xVelocity;
+		t = (worldBounds.m_maxX - x) / xVelocity;
 		if (t < lowest_t) {
 			colour = COLOUR_BLUE;
 			lowest_t = t;
@@ -46,7 +45,7 @@ void CpuExecutor::TraceRay(uint32_t* buffer, size_t i, const WorldBounds * const
 
 	// Bottom wall
 	if (yVelocity < 0.0f) {
-		t = (worldBounds->m_lowerBoundY - y) / yVelocity;
+		t = (worldBounds.m_minY - y) / yVelocity;
 		if (t < lowest_t) {
 			colour = COLOUR_GREEN;
 			lowest_t = t;
@@ -55,7 +54,7 @@ void CpuExecutor::TraceRay(uint32_t* buffer, size_t i, const WorldBounds * const
 
 	// Top wall
 	if (yVelocity > 0.0f) {
-		t = (worldBounds->m_upperBoundY - y) / yVelocity;
+		t = (worldBounds.m_maxY - y) / yVelocity;
 		if (t < lowest_t) {
 			colour = COLOUR_YELLOW;
 			lowest_t = t;
@@ -64,9 +63,9 @@ void CpuExecutor::TraceRay(uint32_t* buffer, size_t i, const WorldBounds * const
 
 	// Back wall
 	if (zVelocity > 0.0f) {
-		t = (worldBounds->m_upperBoundZ - z) / zVelocity;
+		t = (worldBounds.m_maxZ - z) / zVelocity;
 		if (t < lowest_t) {
-			colour = COLOUR_T;
+			colour = COLOUR_TURQUOISE;
 			lowest_t = t;
 		}
 	}

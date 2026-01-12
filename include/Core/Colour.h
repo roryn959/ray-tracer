@@ -16,11 +16,11 @@ struct Colour {
     }
 };
 
-constexpr Colour COLOUR_BLACK 	{ 0, 	0, 		0, 		255 };
-constexpr Colour COLOUR_WHITE 	{ 255,	255,	255, 	255 };
-constexpr Colour COLOUR_RED 	{ 255,	0, 		0, 		255 };
-constexpr Colour COLOUR_GREEN 	{ 0, 	255, 	0, 		255 };
-constexpr Colour COLOUR_BLUE 	{ 0, 	0, 		255, 	255 };
-constexpr Colour COLOUR_YELLOW 	{ 255, 	255, 	0, 		255 };
-constexpr Colour COLOUR_PURPLE 	{ 255, 	0, 		255, 	255 };
-constexpr Colour COLOUR_T		{ 0,	255,	255,	255 };
+constexpr Colour COLOUR_BLACK 		{ 0, 	0, 		0, 		255 };
+constexpr Colour COLOUR_WHITE 		{ 255,	255,	255, 	255 };
+constexpr Colour COLOUR_RED 		{ 255,	0, 		0, 		255 };
+constexpr Colour COLOUR_GREEN 		{ 0, 	255, 	0, 		255 };
+constexpr Colour COLOUR_BLUE 		{ 0, 	0, 		255, 	255 };
+constexpr Colour COLOUR_YELLOW 		{ 255, 	255, 	0, 		255 };
+constexpr Colour COLOUR_PURPLE 		{ 255, 	0, 		255, 	255 };
+constexpr Colour COLOUR_TURQUOISE	{ 0,	255,	255,	255 };

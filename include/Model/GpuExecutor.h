@@ -13,9 +13,7 @@ public:
     GpuExecutor(const World& world);
     ~GpuExecutor();
 
-    void TraceRays(uint32_t* data);
-
-	void multiply_by_five(int* data, std::size_t count);
+    void TraceRays(uint32_t* buffer);
 
 private:
 	void InitialiseDevice();
