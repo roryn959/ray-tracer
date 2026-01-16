@@ -6,7 +6,6 @@
 #include "Core/Colour.h"
 #include "World.h"
 
-
 class GpuExecutor {
 public:
     GpuExecutor(const World& world);
@@ -20,7 +19,9 @@ private:
 	void CheckCommandBuffer();
 	void InitialisePipeline();
 
-	const World& m_world;
+	const World& 	m_world;
+	Colour* 		m_accumulator;
+	size_t			m_accumulationCount;
 
     struct Impl;     // opaque
     Impl* impl;      // pimpl to hide Objective-C++

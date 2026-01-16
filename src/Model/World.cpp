@@ -1,29 +1,40 @@
 #include "Model/World.h"
 
 World::World() :
+	m_cuboidLights{},
+	m_planes{},
 	m_cuboids{}
 {
-	Cuboid leftWall{ Vector{ -1.0f, -1.0f, -1.0f}, Vector{ -1.0f + EPSILON, 1.0f, 1.0f}, COLOUR_RED };
-	m_cuboids.push_back(leftWall);
+	Plane leftWall{ AXIS::X, -1.0f, Material{ false, COLOUR_RED, 0.00f } };
+	m_planes.push_back(leftWall);
 
-	Cuboid frontWall{ Vector{ -1.0f, -1.0f, 1.0f }, Vector{ 1.0f, 1.0f, 1.0f + EPSILON }, COLOUR_TURQUOISE };
-	m_cuboids.push_back(frontWall);
+	Plane rightWall{ AXIS::X, 1.0f, Material{ false, COLOUR_BLUE, 0.00f } };
+	m_planes.push_back(rightWall);
 
-	Cuboid rightWall{ Vector{ 1.0f, -1.0f, -1.0f }, Vector{ 1.0f + EPSILON, 1.0f, 1.0f }, COLOUR_BLUE };
-	m_cuboids.push_back(rightWall);
+	Plane bottomWall{ AXIS::Y, -1.0f, Material{ false, COLOUR_GREEN, 0.00f } };
+	m_planes.push_back(bottomWall);
 
-	Cuboid backWall{ Vector{ -1.0f, -1.0f, -1.0f }, Vector{ 1.0f, 1.0f, -1.0f + EPSILON }, COLOUR_PINK };
-	m_cuboids.push_back(backWall);
+	Plane topWall{ AXIS::Y, 1.0f, Material{ false, COLOUR_YELLOW, 0.00f } };
+	m_planes.push_back(topWall);
 
-	Cuboid bottomWall{ Vector{ -1.0f, -1.0f, -1.0f }, Vector{ 1.0f, -1.0f + EPSILON, 1.0f }, COLOUR_GREEN };
-	m_cuboids.push_back(bottomWall);
+	Plane backWall{ AXIS::Z, -1.0f, Material{ false, COLOUR_PINK, 0.00f } };
+	m_planes.push_back(backWall);
 
-	Cuboid topWall{ Vector{ -1.0f, 1.0f, -1.0f }, Vector{ 1.0f, 1.0f + EPSILON, 1.0f }, COLOUR_YELLOW };
-	m_cuboids.push_back(topWall);
+	Plane frontWall{ AXIS::Z, 1.0f, Material{ false, COLOUR_TURQUOISE, 0.00f } };
+	m_planes.push_back(frontWall);
 
-	Cuboid cuboid0{ Vector{ -1.0f, -0.5f, 0.75f }, Vector{ -0.75f, -0.25f, 1.0f }, COLOUR_BLACK };
-	//m_cuboids.push_back(cuboid0);
+	Cuboid light1{ Vector{ -1.0f, -0.5f, 0.75f }, Vector{ -0.75f, -0.25f, 1.0f }, Material{ true, COLOUR_WARM_LIGHT, 0.0f } };
+	m_cuboidLights.push_back(light1);
 
-	Cuboid cuboid1{ Vector{ -0.35f, 0.4f, 0.5f}, Vector{ 0.9f, 0.8f, 0.7f }, COLOUR_BLACK };
-	//m_cuboids.push_back(cuboid1);
+	Cuboid light2{ Vector{ 0.75f, 0.75f, 0.75f }, Vector{ 1.0f, 1.0f, 1.0f }, Material{ true, COLOUR_WARM_LIGHT, 0.0f } };
+	m_cuboidLights.push_back(light2);
+
+	Cuboid light3{ Vector{ -0.35f, -0.35f, -0.9f }, Vector{ 0.35f, 0.35f, -0.9f }, Material{ true, COLOUR_WARM_LIGHT, 0.0f } };
+	m_cuboidLights.push_back(light3);
+
+	Cuboid mirror1{ Vector{ -0.99f, -0.60f, 0.6f}, Vector{ -0.3f, -0.65f, 0.99f }, Material{ false, COLOUR_BLACK, 1.0f } };
+	m_cuboids.push_back(mirror1);
+
+	Cuboid slab1{ Vector{ -0.99f, 0.15f, 0.6f}, Vector{ -0.3f, 0.20f, 0.99f }, Material{ false, COLOUR_BLACK, 0.0f } };
+	m_cuboids.push_back(slab1);
 }

@@ -2,8 +2,8 @@
 
 #include <SDL2/SDL.h>
 
-#define WINDOW_W 700
-#define WINDOW_H 700
+#define WINDOW_W 820
+#define WINDOW_H 820
 
 constexpr int NUM_PIXELS = WINDOW_W * WINDOW_H;
 

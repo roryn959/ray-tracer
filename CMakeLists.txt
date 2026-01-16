@@ -27,6 +27,8 @@ add_custom_target(metal_shaders ALL DEPENDS ${METAL_LIB})
 
 add_executable(main ${SOURCES})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
 add_dependencies(main metal_shaders)
 
 target_link_libraries(main

@@ -10,10 +10,13 @@ struct GpuExecutor::Impl {
 };
 
 GpuExecutor::GpuExecutor(const World& world) :
-	m_world{world}
+	m_world{world},
+	m_accumulator{},
+	m_accumulationCount{1}
 {
 	@autoreleasepool {
 		impl = new Impl{};
+		m_accumulator = new Colour[NUM_PIXELS];
 
 		InitialiseDevice();
 		if (!impl->device) std::exit(1);
@@ -29,6 +32,7 @@ GpuExecutor::GpuExecutor(const World& world) :
 
 GpuExecutor::~GpuExecutor() {
     delete impl;
+	delete[] m_accumulator;
 }
 
 void GpuExecutor::InitialiseDevice() {
@@ -36,10 +40,6 @@ void GpuExecutor::InitialiseDevice() {
 	if (impl->device) return;
 
 	NSArray<id<MTLDevice>> *devices = nil;
-	if (!&MTLCopyAllDevices) {
-		std::cerr << "Copy all devices not available.\n";
-		std::exit(1);
-	}
 
 	devices = MTLCopyAllDevices();
 	if (!devices || devices.count == 0) {
@@ -95,38 +95,52 @@ void GpuExecutor::InitialisePipeline()
 
 void GpuExecutor::TraceRays(uint32_t* pixels) {
 	size_t count = NUM_PIXELS;
-	size_t byteSize = count * sizeof(int);
+	size_t byteSize = count * sizeof(Colour);
 
-	id<MTLBuffer> pixelBuffer = [
-		impl->device newBufferWithBytesNoCopy:pixels
-        length:byteSize
-        options:MTLResourceStorageModeShared
-        deallocator:nil
+	id<MTLBuffer> gpuBuffer = [
+		impl->device
+		newBufferWithLength:byteSize
+		options:MTLResourceStorageModeShared
 	];
 
-    if (!pixelBuffer) {
-        std::cerr << "Failed to create buffer.\n";
-        return;
-    }
+	uint numPlanes = m_world.GetPlanes().size();
+	id<MTLBuffer> planeBuffer = [
+		impl->device newBufferWithBytes:m_world.GetPlanes().data()
+        length:sizeof(Plane) * numPlanes
+        options:MTLResourceStorageModeShared
+	];
+
+	uint numCuboids = m_world.GetCuboids().size();
+	id<MTLBuffer> cuboidBuffer = [
+		impl->device newBufferWithBytes:m_world.GetCuboids().data()
+        length:sizeof(Cuboid) * numCuboids
+        options:MTLResourceStorageModeShared
+	];
+
+	uint numCuboidLights = m_world.GetCuboidLights().size();
+	id<MTLBuffer> cuboidLightBuffer = [
+		impl->device newBufferWithBytes:m_world.GetCuboidLights().data()
+        length:sizeof(Cuboid) * numCuboidLights
+        options:MTLResourceStorageModeShared
+	];
 
 	id<MTLCommandBuffer> cmd = [impl->queue commandBuffer];
-
-    if (!cmd) {
-        std::cerr << "Failed to create command buffer\n";
-        return;
-    }
-
     id<MTLComputeCommandEncoder> enc = [cmd computeCommandEncoder];
 
-	[enc setComputePipelineState:impl->pipeline];
-    [enc setBuffer:pixelBuffer offset:0 atIndex:0];
-
     MTLSize gridSize = MTLSizeMake(count, 1, 1);
-
     NSUInteger tgSize = impl->pipeline.maxTotalThreadsPerThreadgroup;
     if (tgSize > count) tgSize = count;
-
     MTLSize threadgroupSize = MTLSizeMake(tgSize, 1, 1);
+
+	[enc setComputePipelineState:impl->pipeline];
+    [enc setBuffer:gpuBuffer offset:0 atIndex:0];
+	[enc setBytes:&m_accumulationCount length:sizeof(uint) atIndex:1];
+	[enc setBuffer:planeBuffer offset:0 atIndex:2];
+	[enc setBytes:&numPlanes length:sizeof(uint) atIndex:3];
+	[enc setBuffer:cuboidBuffer offset:0 atIndex:4];
+	[enc setBytes:&numCuboids length:sizeof(uint) atIndex:5];
+	[enc setBuffer:cuboidLightBuffer offset:0 atIndex:6];
+	[enc setBytes:&numCuboidLights length:sizeof(uint) atIndex:7];
 
     [enc dispatchThreads:gridSize threadsPerThreadgroup:threadgroupSize];
 
@@ -138,4 +152,16 @@ void GpuExecutor::TraceRays(uint32_t* pixels) {
         std::cerr << "Compute dispatch failed.\n";
         return;
     }
+
+	Colour* gpuColours = (Colour*)[gpuBuffer contents];
+
+	for (int i = 0; i < NUM_PIXELS; ++i) {
+		m_accumulator[i] = m_accumulator[i] + gpuColours[i];
+	}
+
+	for (int i = 0; i < NUM_PIXELS; ++i) {
+		pixels[i] = ToUint32( GammaCorrect(m_accumulator[i] / m_accumulationCount) );
+	}
+
+	++m_accumulationCount;
 }
