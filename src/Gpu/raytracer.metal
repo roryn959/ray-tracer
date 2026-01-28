@@ -404,11 +404,7 @@ bool TryCollision(Cuboid cuboid, Ray ray, thread Collision* bestCollision) {
 	return true;
 }
 
-bool TryCollision(
-    Sphere sphere,
-    Ray ray,
-    thread Collision* best
-) {
+bool TryCollision(Sphere sphere, Ray ray, thread Collision* best) {
     Vector L = ray.m_pos - sphere.m_position;
 
     float a = Dot(ray.m_vel, ray.m_vel);
